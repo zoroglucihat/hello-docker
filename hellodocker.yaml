@@ -1,15 +1,38 @@
-apiVersion: v1
-kind: Pod
+---
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   labels:
-    run: hello-docker
+    app: hello-docker
   name: hello-docker
-  namespace: challenge
 spec:
-  containers:
-  - image: harik8/hello-docker
-    name: hello-docker
-    resources: {}
-  dnsPolicy: ClusterFirst
-  restartPolicy: Never
-status: {}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-docker
+  template:
+    metadata:
+      labels:
+        app: hello-docker
+    spec:
+      containers:
+      - image: harik8/hello-docker
+        imagePullPolicy: Always
+        name: hello-docker
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: hello-docker
+  name: hello-docker
+spec:
+  ports:
+  - nodePort: 80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: hello-docker
+  type: NodePort
