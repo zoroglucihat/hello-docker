@@ -5,6 +5,7 @@ metadata:
   labels:
     app: hello-docker
   name: hello-docker
+  namespace: challenge
 spec:
   replicas: 1
   selector:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         app: hello-docker
+        namespace: challenge
     spec:
       containers:
       - image: harik8/hello-docker
