@@ -31,7 +31,7 @@ metadata:
   name: hello-docker
 spec:
   ports:
-  - nodePort: 80
+  - nodePort: 32000
     port: 80
     protocol: TCP
     targetPort: 80
