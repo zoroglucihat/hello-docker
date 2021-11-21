@@ -1,58 +1,46 @@
-// hello-docker
-
-String image    = env.JOB_NAME.split('/')[1]
-String registry = "harik8/$image"
-String tag      = "latest"
-
 pipeline {
-    agent {
-    kubernetes {
-      	cloud 'kubernetes'
-      	label 'hello-docker'
-      	defaultContainer 'jnlp'
-      	yamlFile 'pod.yaml'
+
+  environment {
+    registry = "localhost:5000/cihat/myweb"
+    dockerImage = ""
+  }
+
+  agent any
+
+  stages {
+
+    stage('Checkout Source') {
+      steps {
+        git 'https://github.com/zorolos/hello-docker.git'
       }
     }
-    
-    environment {
-        DOCKER_CREDENTIALS=credentials("DOCKER_CREDENTIALS")
+
+    stage('Build image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
     }
 
-    stages {
-        stage("lint") {
-            steps {
-                container("lint") {
-                    sh  "hadolint $WORKSPACE/Dockerfile"
-                }
-            }
+    stage('Push Image') {
+      steps{
+        script {
+          docker.withRegistry( "" ) {
+            dockerImage.push()
+          }
         }
-
-        stage("publish") {
-            steps {
-                container(name: 'kaniko', shell: '/busybox/sh') {
-                     withEnv(['PATH+EXTRA=/busybox:/kaniko']) {
-                      sh """#!/busybox/sh
-                        /kaniko/executor --context=$WORKSPACE --destination $registry:$tag
-                      """
-                     }
-                }
-            }
-        }
-
-        stage("scan") {
-            steps {
-                container("klar") {
-                    sh  """
-                            CLAIR_ADDR=$CLAIR_ADDRESS \
-                            CLAIR_OUTPUT=High \
-                            CLAIR_THRESHOLD=1 \
-                            DOCKER_USER=$DOCKER_CREDENTIALS_USR \
-                            DOCKER_PASSWORD=$DOCKER_CREDENTIALS_PSW \
-                            DOCKER_INSECURE=true \
-                            klar $registry:$tag
-                        """
-                }
-            }
-        }
+      }
     }
+
+    stage('Deploy App') {
+      steps {
+        script {
+          kubernetesDeploy(configs: "hellodocker.yaml", kubeconfigId: "mykubeconfig")
+        }
+      }
+    }
+
+  }
+
 }
