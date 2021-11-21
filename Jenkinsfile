@@ -1,11 +1,8 @@
 pipeline {
 
-  environment {
-    registry = "localhost:5000/cihat/myweb"
-    dockerImage = ""
-  }
 
-  agent any
+
+ 
 
   stages {
 
