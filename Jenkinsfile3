@@ -1,0 +1,27 @@
+pipeline {
+
+agent any
+
+ 
+
+  stages {
+
+    stage('Checkout Source') {
+      steps {
+        git 'https://github.com/zorolos/hello-docker.git'
+      }
+    }
+
+
+
+    stage('Deploy App') {
+      steps {
+        script {
+          echo "Oh shit, it is not working ERROR!"
+        }
+      }
+    }
+
+  }
+
+}
